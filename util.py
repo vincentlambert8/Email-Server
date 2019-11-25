@@ -1,6 +1,11 @@
 import getpass
 from hashlib import sha256
 from os import path, mkdir
+from re import search
+
+
+def searchString(regex, string):
+    return search(regex, string)
 
 
 def hashPassword(password):

@@ -1,6 +1,8 @@
 #!/usr/bin/python2.4
 # -*- coding: utf-8 -*-
 
+import util
+
 
 def createUserConfigFile(username, password):
     createUserDirectory(username)
@@ -17,9 +19,8 @@ def createUserDirectory(username):
 
 def logIn(username, password):
     filePath = f"{username}/config.txt"
-
     if util.checkIfFileExists(filePath):
-        break
+        pass
     print("Le nom d'utilisateur entré n'existe pas. Veuillez recommencer")
 
 
@@ -29,5 +30,5 @@ def usernameIsValid(username):
 
 
 def passwordIsValid(password):
-    #TODO trover le regex pour valider le password
-    return True
+    regex = "^(?=.*[a-z])(?=.*[A-Z])(?=(.*?\d){2})[a-zA-Z\d]{6,12}$"
+    return util.searchString(regex, password)

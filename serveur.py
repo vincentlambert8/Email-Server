@@ -17,11 +17,29 @@ def createUserDirectory(username):
     util.createDirectory(username)
 
 
+def passwordMatches(password, filePath):
+    with open(filePath, "r") as file:
+        originalHash = file.readline()
+        enteredHash = util.hashPassword(password)
+        return originalHash == enteredHash
+
+
 def logIn(username, password):
+    while not tryToLogIn(username, password):
+        continue
+    # TODO Trouver comment communiquer avec le client
+    sendCommandToClient(showOptionMenu)
+
+
+def tryToLogIn(username, password):
     filePath = f"{username}/config.txt"
-    if util.checkIfFileExists(filePath):
-        pass
-    print("Le nom d'utilisateur entré n'existe pas. Veuillez recommencer")
+    if not util.checkIfFileExists(filePath):
+        print("Le nom d'utilisateur entré n'existe pas. Veuillez recommencer")
+        return False
+    if not passwordMatches(password, filePath):
+        print("Le mot de passe entré est invalide. Veuillez recommencer")
+        return False
+    return True
 
 
 def usernameIsValid(username):

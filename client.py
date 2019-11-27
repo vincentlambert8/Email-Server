@@ -48,7 +48,7 @@ def logIn():
     username, password = getAccountCredentials()
 
     #TODO trouver comment faire pour envoyer une commande au serveur
-    sendCommandToServer(logIn, username, password)
+    # sendCommandToServer(logIn, username, password)
 
 
 def checkMainMenuCommand(mainMenuCommand):
@@ -63,7 +63,7 @@ def getLoginCommand():
         logInCommand = input()
         successfulCommand = checkLogInCommand(logInCommand)
         if not successfulCommand:
-            print("La commande entrée est invalie. Veuillez entrer un nombre de 1 à 2")
+            print("La commande entrée est invalide. Veuillez entrer un nombre de 1 à 2")
 
     return logInCommand
 
@@ -71,11 +71,11 @@ def getLoginCommand():
 def getMainMenuCommand():
     successfulCommand = False
     while not successfulCommand:
-        showLogInMenu()
+        showMainMenu()
         mainMenuCommand = input()
-        successfulCommand = checkMainMenuCommand(logInCommand)
+        successfulCommand = checkMainMenuCommand(mainMenuCommand)
         if not successfulCommand:
-            print("La commande entrée est invalie. Veuillez entrer un nombre de 1 à 4")
+            print("La commande entrée est invalide. Veuillez entrer un nombre de 1 à 4")
 
     return mainMenuCommand
 

@@ -3,14 +3,15 @@
 
 import socket
 import util
-import argparse
+import optparse
+import sys
 
 
 def getParserArgument():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--port", dest="port", type=int, default=1400,
+    parser = optparse.OptionParser()
+    parser.add_option("-p", "--port", dest="port", type=int, default=1400,
                         help="Port sur lequel envoyer et écouter les messages")
-    return parser.parse_args()
+    return parser.parse_args(sys.argv[1:])[0]
 
 
 def createUserConfigFile(username, password):
@@ -37,7 +38,7 @@ def logIn(username, password):
     while not tryToLogIn(username, password):
         continue
     # TODO Trouver comment communiquer avec le client
-    sendCommandToClient(showOptionMenu)
+    #sendCommandToClient(showOptionMenu)
 
 
 def tryToLogIn(username, password):
@@ -75,63 +76,33 @@ def createNewSocket():
     return serverSocket
 
 
-def startSocket(serverSocket):
-    serverSocket.listen(5)
+# def startSocket(serverSocket):
+#     serverSocket.listen(5)
 
 
 def createAccount(username, password):
-    createUserDirectory(username, pasword)
+    createUserDirectory(username, password)
 
 
 def main():
     serverSocket = createNewSocket()
-    startSocket(serverSocket)
+    #startSocket(serverSocket)
 
-    connection, address = serverSocket.accept()
+    serverSocket.listen(5)
 
-    accountData = dict(connection.recv(1024))
+    while True:
 
-    if accountData.get("command") == "login":
-        logIn(accountData.get("username"), accountData.get("password"))
+        connection, address = serverSocket.accept()
 
-    elif accountData.get("command" == "signup"):
-        createAccount(accountData.get("username"), accountData.get("password"))
+        accountData = eval(connection.recv(1024).decode())
+
+        if accountData.get("command") == "login":
+            logIn(accountData.get("username"), accountData.get("password"))
+
+        elif accountData.get("command" == "signup"):
+            createAccount(accountData.get("username"), accountData.get("password"))
 
 
 if __name__ == "__main__":
     PORT = getParserArgument().port
     main()
-
-
-def launchServerSocket(serverSocket):
-    serverSocket.listen(5)
-    print("Démarrage du serveur...")
-    print("Listening on port " + str(serverSocket.getsockname()[1]))
-
-    while True:  # Boucle connexion
-        # Le client se connecte au serveur
-        # s est un socket pour interagir avec le client
-        (s, address) = serverSocket.accept()
-
-        clientIdentified = False
-
-        while not clientIdentified:  # Boucle identification
-            loginChoice = s.recv(1024).decode()
-            if loginChoice == "1":
-                username = s.recv(1024).decode()
-                if not usernameIsValid(username):
-                    errorMessage = "Ce nom d'utilisateur existe déjà. Veuillez rééssayer."
-                    s.send(errorMessage.encode())
-                    continue
-
-                password = s.recv(1024).decode()
-                if not passwordIsValid(password):
-                    errorMessage = "Le mot de passe est invalide. Veuillez rééssayer."
-                    s.send(errorMessage.encode())
-                    continue
-                    # TODO Faire en sorte que le serveur se souvient du username si le mot de passe est invalide
-
-                clientIdentified = True
-
-            elif loginChoice == "2":
-                username = s.recv(1024).decode()

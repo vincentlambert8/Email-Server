@@ -3,14 +3,15 @@
 import socket
 
 import util
-import argparse
+import optparse
+import sys
 
 
 def getparserArgument():
-    parser = argparse.Argumentparser()
-    parser.add_argument("-p", "--port", dest="port", type=int, default=1400,
+    parser = optparse.OptionParser()
+    parser.add_option("-p", "--port", dest="port", type=int, default=1400,
                         help="port sur lequel envoyer et écouter les messages")
-    return parser.parse_args()
+    return parser.parse_args(sys.argv[1:])[0]
 
 
 def showLogInMenu():
@@ -51,19 +52,15 @@ def createAccount():
     data = {"command": "signup", "username": username, "password": password}
     message = str(data)
 
-    #TODO trouver comment faire pour envoyer une commande au serveur
     sendMessageToServer(message)
 
 
 def logIn():
     username, password = getAccountCredentials()
     data = {"command": "login", "username": username, "password": password}
-    str(data)
+    message = str(data)
 
     sendMessageToServer(message)
-
-    #TODO trouver comment faire pour envoyer une commande au serveur
-    # sendCommandToServer(logIn, username, password)
 
 
 def checkMainMenuCommand(mainMenuCommand):
@@ -103,7 +100,8 @@ def createSocket():
 
 
 def sendMessageToServer(message):
-    CLIENT_SOCKET.send(bytes(message, encoding="utf-8"))
+    #CLIENT_SOCKET.send(bytes(message, encoding="utf-8"))
+    CLIENT_SOCKET.send(message.encode())
 
 
 def receiveMessageFromServer(clientSocket):

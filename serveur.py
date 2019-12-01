@@ -101,4 +101,37 @@ def main():
 if __name__ == "__main__":
     PORT = getParserArgument().port
     main()
-    
+
+
+def launchServerSocket(serverSocket):
+    serverSocket.listen(5)
+    print("Démarrage du serveur...")
+    print("Listening on port " + str(serverSocket.getsockname()[1]))
+
+    while True:  # Boucle connexion
+        # Le client se connecte au serveur
+        # s est un socket pour interagir avec le client
+        (s, address) = serverSocket.accept()
+
+        clientIdentified = False
+
+        while not clientIdentified:  # Boucle identification
+            loginChoice = s.recv(1024).decode()
+            if loginChoice == "1":
+                username = s.recv(1024).decode()
+                if not usernameIsValid(username):
+                    errorMessage = "Ce nom d'utilisateur existe déjà. Veuillez rééssayer."
+                    s.send(errorMessage.encode())
+                    continue
+
+                password = s.recv(1024).decode()
+                if not passwordIsValid(password):
+                    errorMessage = "Le mot de passe est invalide. Veuillez rééssayer."
+                    s.send(errorMessage.encode())
+                    continue
+                    # TODO Faire en sorte que le serveur se souvient du username si le mot de passe est invalide
+
+                clientIdentified = True
+
+            elif loginChoice == "2":
+                username = s.recv(1024).decode()

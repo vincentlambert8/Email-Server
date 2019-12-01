@@ -1,7 +1,16 @@
 #!/usr/bin/python2.4
 # -*- coding: utf-8 -*-
+import socket
 
 import util
+import argparse
+
+
+def getparserArgument():
+    parser = argparse.Argumentparser()
+    parser.add_argument("-p", "--port", dest="port", type=int, default=1400,
+                        help="port sur lequel envoyer et écouter les messages")
+    return parser.parse_args()
 
 
 def showLogInMenu():
@@ -26,26 +35,32 @@ def getUsername():
     return input("Nom d'utilisateur: ")
 
 
-def getPassword():
-    return util.inputPassword()
+def getpassword():
+    return util.inputpassword()
 
 
 def getAccountCredentials():
     username = getUsername()
-    password = getPassword()
+    password = getpassword()
 
     return username, password
 
 
 def createAccount():
     username, password = getAccountCredentials()
+    data = {"command": "signup", "username": username, "password": password}
+    message = str(data)
 
     #TODO trouver comment faire pour envoyer une commande au serveur
-    sendCommandToServer(createAccount, username, password)
+    sendMessageToServer(message)
 
 
 def logIn():
     username, password = getAccountCredentials()
+    data = {"command": "login", "username": username, "password": password}
+    str(data)
+
+    sendMessageToServer(message)
 
     #TODO trouver comment faire pour envoyer une commande au serveur
     # sendCommandToServer(logIn, username, password)
@@ -80,7 +95,24 @@ def getMainMenuCommand():
     return mainMenuCommand
 
 
+def createSocket():
+    port = getparserArgument().port
+    clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    clientSocket.connect(("localhost", port))
+    return clientSocket
+
+
+def sendMessageToServer(message):
+    CLIENT_SOCKET.send(bytes(message, encoding="utf-8"))
+
+
+def receiveMessageFromServer(clientSocket):
+    data = clientSocket.recv(512)
+    return data
+
+
 def main():
+
     logInCommand = getLoginCommand()
     if logInCommand == "1":
         createAccount()
@@ -99,4 +131,5 @@ def main():
 
 
 if __name__ == "__main__":
+    CLIENT_SOCKET = createSocket()
     main()

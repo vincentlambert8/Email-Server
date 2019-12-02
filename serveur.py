@@ -43,6 +43,7 @@ def logIn(username, password):
     successfulLogIn, message = tryToLogIn(username, password)
     data = {"status": successfulLogIn, "message": message}
     sendMessageToClient(str(data))
+
     return successfulLogIn
 
 
@@ -106,6 +107,10 @@ def accountExists(username):
     return util.checkIfFileExists(f"{username}/config.txt")
 
 
+def checkLogInCommand(logInCommand):
+    return logInCommand == "1" or logInCommand == "2"
+
+
 def getAccountCredentials(serverSocket):
     username = getUsername(serverSocket)
     password = getpassword(serverSocket)
@@ -161,9 +166,6 @@ def main():
 
         elif commandData.get("command") == "quit":
             break
-
-        else:
-            raise ValueError("Command not recognized")
 
 
 def startSocket(serverSocket):

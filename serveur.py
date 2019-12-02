@@ -35,11 +35,30 @@ def passwordMatches(username, password):
         return originalHash == enteredHash
 
 
-def logIn(username, password):
-    while not tryToLogIn(username, password):
-        continue
-    # TODO Trouver comment communiquer avec le client
-    #sendCommandToClient(showOptionMenu)
+def logIn(serverSocket):
+    validUsername = False
+    while not validUsername:
+        serverSocket.send("Nom d'utilisateur : ".encode())
+        username = serverSocket.recv(1024).decode()
+        if usernameIsValid(username):
+            message = "Le nom d'utilisateur n'existe pas. Veuillez réessayer."
+            serverSocket.send(message.encode())
+        else:
+            message = "Username valid"
+            serverSocket.send(message.encode())
+            validUsername = True
+
+    validPassword = False
+    while not validPassword:
+        password = serverSocket.recv(1024).decode()
+        if not passwordMatches(username, password):
+            message = "Le mot de passe ne correspond pas au nom d'utilisateur. Veuillez réessayer."
+            serverSocket.send(message.encode())
+        else:
+            message = "Password valid"
+            serverSocket.send(message.encode())
+            validPassword = True
+
 
 
 def tryToLogIn(username, password):
@@ -139,6 +158,7 @@ def createAccount(serverSocket):
             serverSocket.send(message.encode())
             validPassword = True
 
+    createUserConfigFile(username, password)
     #     username = serverSocket.recv(1024).decode()
     #     print("salut")
     #     serverSocket.send("Mot de passe : ".encode())
@@ -193,6 +213,7 @@ def main():
         logInCommand = getLoginCommand(connection)
         if logInCommand == "1":
             createAccount(connection)
+
         else:
             logIn(connection)
 

@@ -163,22 +163,32 @@ def main():
             elif serverResponse == "Password valid":
                 validPassword = True
 
-    #         password = util.inputpassword()
-    #         sendMessageToServer(password)
-    #
-    #         serverResponse = receiveMessageFromServer()
-    #         if serverResponse == "Le nom d'utilisateur est déjà utilisé. Veuillez réessayer.":
-    #             print(serverResponse)
-    #             continue
-    #         elif serverResponse == "Le mot de passe est invalide. Veuillez réessayer.":
-    #             print(serverResponse)
-    #             continue
-    #         else:
-    #             createAccountSuccessful = True
-    #
-    # else:
-    #     logIn()
+    else:
+        validUsername = False
+        while not validUsername:
+            serverAskUsername = receiveMessageFromServer()
+            print(serverAskUsername)
+            username = input()
+            sendMessageToServer(username)
 
+            serverResponse = receiveMessageFromServer()
+            if serverResponse == "Le nom d'utilisateur n'existe pas. Veuillez réessayer.":
+                print(serverResponse)
+
+            elif serverResponse == "Username valid":
+                validUsername = True
+
+        validPassword = False
+        while not validPassword:
+            password = util.inputpassword()
+            sendMessageToServer(password)
+
+            serverResponse = receiveMessageFromServer()
+            if serverResponse == "Le mot de passe ne correspond pas au nom d'utilisateur. Veuillez réessayer.":
+                print(serverResponse)
+
+            elif serverResponse == "Password valid":
+                validPassword = True
 
 # def main():
 #

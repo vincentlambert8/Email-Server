@@ -27,32 +27,38 @@ def createUserDirectory(username):
     util.createDirectory(username)
 
 
-def passwordMatches(username, password):
-    filePath = f"{username}/config.txt"
+def passwordMatches(password, filePath):
     with open(filePath, "r") as file:
         originalHash = file.readline()
         enteredHash = util.hashPassword(password)
         return originalHash == enteredHash
+    
+
+def sendMessageToClient(message):
+    CONNECTION.send(message.encode())
 
 
 def logIn(username, password):
-    while not tryToLogIn(username, password):
-        continue
-    # TODO Trouver comment communiquer avec le client
-    #sendCommandToClient(showOptionMenu)
+    successfulLogIn = False
+    successfulLogIn, message = tryToLogIn(username, password)
+    data = {"status": successfulLogIn, "message": message}
+    sendMessageToClient(str(data))
+    return successfulLogIn
 
 
 def tryToLogIn(username, password):
-    message = ""
-
     filePath = f"{username}/config.txt"
+
     if not util.checkIfFileExists(filePath):
         message = "Le nom d'utilisateur entré n'existe pas. Veuillez recommencer"
-        return False
+        return False, message
+
     if not passwordMatches(password, filePath):
         message = "Le mot de passe entré est invalide. Veuillez recommencer"
-        return False
-    return True
+        return False, message
+
+    message = f"Bienvenue {username}"
+    return True, message
 
 
 def usernameIsValid(username):
@@ -77,88 +83,27 @@ def createNewSocket():
     return serverSocket
 
 
-# def startSocket(serverSocket):
-#     serverSocket.listen(5)
+def createAccount(username, password):
+    accountCreated = False
+    if username == "":
+        data = {"status": False, "message": "Le nom d'utilisateur est vide. Veuillez recommencer"}
+        sendMessageToClient(str(data))
+
+    elif accountExists(username):
+        data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé. Veuillez recommencer"}
+        sendMessageToClient(str(data))
+
+    else:
+        createUserConfigFile(username, password)
+        data = {"status": True, "message": "Compte créé avec succès"}
+        sendMessageToClient(str(data))
+        accountCreated = True
+
+    return accountCreated
 
 
-# def createAccount(username, password):
-#     createUserConfigFile(username, password)
-
-
-def getLoginCommand(serverSocket):
-    successfulCommand = False
-    while not successfulCommand:
-        message = ""
-        showLogInMenu(serverSocket)
-        logInCommand = serverSocket.recv(1024).decode()
-        successfulCommand = checkLogInCommand(logInCommand)
-        if not successfulCommand:
-            #print("La commande entrée est invalide. Veuillez entrer un nombre de 1 à 2")
-            message = "La commande entrée est invalide. Veuillez entrer un nombre de 1 à 2"
-            serverSocket.send(message.encode())
-        else:
-            message = "Command successful"
-            serverSocket.send(message.encode())
-
-    return logInCommand
-
-
-def showLogInMenu(serverSocket):
-    # print("\nMenu de connexion")
-    # print("1. Créer un compte")
-    # print("2. Se connecter")
-    connectionMenu = "\nMenu de connexion\n1. Créer un compte\n2. Se connecter"
-    serverSocket.send(connectionMenu.encode())
-
-
-def checkLogInCommand(logInCommand):
-    return logInCommand == "1" or logInCommand == "2"
-
-
-def createAccount(serverSocket):
-    validUsername = False
-    while not validUsername:
-        serverSocket.send("Nom d'utilisateur : ".encode())
-        username = serverSocket.recv(1024).decode()
-        if not usernameIsValid(username):
-            message = "Le nom d'utilisateur est déjà utilisé. Veuillez réessayer."
-            serverSocket.send(message.encode())
-        else:
-            message = "Username valid"
-            serverSocket.send(message.encode())
-            validUsername = True
-
-    validPassword = False
-    while not validPassword:
-        password = serverSocket.recv(1024).decode()
-        if not passwordIsValid(password):
-            message = "Le mot de passe est invalide. Veuillez réessayer."
-            serverSocket.send(message.encode())
-        else:
-            message = "Password valid"
-            serverSocket.send(message.encode())
-            validPassword = True
-
-    #     username = serverSocket.recv(1024).decode()
-    #     print("salut")
-    #     serverSocket.send("Mot de passe : ".encode())
-    #     password = serverSocket.recv(1024).decode()
-    #     print("allo")
-    #     if not usernameIsValid(username):
-    #         message = "Le nom d'utilisateur est déjà utilisé. Veuillez réessayer."
-    #         serverSocket.send(message.encode())
-    #         continue
-    #     elif not passwordIsValid(password):
-    #         message = "Le mot de passe est invalide. Veuillez réessayer."
-    #         serverSocket.send(message.encode())
-    #         continue
-    #     else:
-    #         data = {"command": "signup", "username": username, "password": password}
-    #         serverSocket.send(message.encode())
-    #         createAccountSuccessful = True
-    #
-    # return data
-
+def accountExists(username):
+    return util.checkIfFileExists(f"{username}/config.txt")
 
 
 def getAccountCredentials(serverSocket):
@@ -181,47 +126,56 @@ def getpassword(serverSocket):
 
 
 def main():
-    serverSocket = createNewSocket()
-    #startSocket(serverSocket)
-
-    serverSocket.listen(5)
-
+    # Login/Signup loop
     while True:
+        accountData = eval(CONNECTION.recv(1024).decode())
 
-        connection, address = serverSocket.accept()
+        if accountData.get("command") == "login":
+            if logIn(accountData.get("username"), accountData.get("password")):
+                break
 
-        logInCommand = getLoginCommand(connection)
-        if logInCommand == "1":
-            createAccount(connection)
+        elif accountData.get("command") == "signup":
+            if createAccount(accountData.get("username"), accountData.get("password")):
+                break
+
+    # Main menu loop
+    while True:
+        commandData = eval(CONNECTION.recv(1024).decode())
+
+        if commandData.get("command") == "sendMail":
+            sender = commandData.get("sender")
+            recipient = commandData.get("recipient")
+            subject = commandData.get("subject")
+            message = commandData.get("message")
+
+            sendMail(sender, recipient, subject, message)
+            continue
+
+        elif commandData.get("command") == "checkMails":
+            checkMails()
+            continue
+
+        elif commandData.get("command") == "stats":
+            showStats()
+            continue
+
+        elif commandData.get("command") == "quit":
+            break
+
         else:
-            logIn(connection)
+            raise ValueError("Command not recognized")
 
-        # accountData = eval(connection.recv(1024).decode())
-        #
-        # if accountData.get("command") == "login":
-        #     if usernameIsValid(accountData.get("username")):
-        #         message = "Le nom d'utilisateur n'existe pas. Veuillez réessayer."
-        #         connection.send(message.encode())
-        #     elif not passwordMatches(accountData.get("username"), accountData.get("password")):
-        #         message = "Le mot de passe ne correspond pas au nom d'utilisateur. Veuillez réessayer."
-        #         connection.send(message.encode())
-        #     else:
-        #         logIn(accountData.get("username"), accountData.get("password"))
-        #
-        # elif accountData.get("command") == "signup":
-        #     if not usernameIsValid(accountData.get("username")):
-        #         print("frette")
-        #         message = "Le nom d'utilisateur est déjà utilisé. Veuillez réessayer."
-        #         connection.send(message.encode())
-        #     elif not passwordIsValid(accountData.get("password")):
-        #         print("coton")
-        #         message = "Le mot de passe est incorrect. Veuillez réessayer."
-        #         connection.send(message.encode())
-        #     else:
-        #         print("ouatté")
-        #         createAccount(accountData.get("username"), accountData.get("password"))
+
+def startSocket(serverSocket):
+    print("Starting server...")
+    serverSocket.listen(5)
+    print(f"Listening on port {PORT}")
 
 
 if __name__ == "__main__":
     PORT = getParserArgument().port
-    main()
+    SERVER_SOCKET = createNewSocket()
+    startSocket(SERVER_SOCKET)
+    while True:
+        CONNECTION, ADDRESS = SERVER_SOCKET.accept()
+        main()

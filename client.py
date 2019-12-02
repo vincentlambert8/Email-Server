@@ -48,23 +48,11 @@ def getAccountCredentials():
 
 
 def createAccount():
-    accountSuccessful = False
-    while not accountSuccessful:
-        username, password = getAccountCredentials()
-        data = {"command": "signup", "username": username, "password": password}
-        message = str(data)
+    username, password = getAccountCredentials()
+    data = {"command": "signup", "username": username, "password": password}
+    message = str(data)
 
-        sendMessageToServer(message)
-
-        serverResponse = receiveMessageFromServer(CLIENT_SOCKET)
-        if serverResponse == "Le nom d'utilisateur est déjà utilisé. Veuillez réessayer.":
-            print(serverResponse)
-            continue
-        elif serverResponse == "Le mot de passe est incorrect. Veuillez réessayer.":
-            print(serverResponse)
-            continue
-        else:
-            accountSuccessful = True
+    sendMessageToServer(message)
 
 
 def logIn():
@@ -113,7 +101,6 @@ def createSocket():
 
 
 def sendMessageToServer(message):
-    #CLIENT_SOCKET.send(bytes(message, encoding="utf-8"))
     CLIENT_SOCKET.send(message.encode())
 
 
@@ -122,81 +109,45 @@ def receiveMessageFromServer():
     return data
 
 
+def checkMails():
+    pass
+
+
+def endConnection():
+    data = {"command": "quit"}
+    sendMessageToServer(str(data))
+    quit()
+
+
 def main():
-    connectionMenuSuccess = False
-    while not connectionMenuSuccess:
-        connectionMenu = receiveMessageFromServer()
-        print(connectionMenu)
-        logInCommand = input()
-        sendMessageToServer(logInCommand)
+    logInLoop = True
 
-        serverResponse = receiveMessageFromServer()
-        if serverResponse == "La commande entrée est invalide. Veuillez entrer un nombre de 1 à 2":
-            print(serverResponse)
+    while logInLoop:
+        logInCommand = getLoginCommand()
+        if logInCommand == "1":
+            createAccount()
 
-        elif serverResponse == "Command successful":
-            connectionMenuSuccess = True
+        elif logInCommand == "2":
+            logIn()
 
-    if logInCommand == "1":
-        validUsername = False
-        while not validUsername:
-            serverAskUsername = receiveMessageFromServer()
-            print(serverAskUsername)
-            username = input()
-            sendMessageToServer(username)
-            serverResponse = receiveMessageFromServer()
-            if serverResponse == "Le nom d'utilisateur est déjà utilisé. Veuillez réessayer.":
-                print(serverResponse)
+        serverResponse = eval(receiveMessageFromServer())
+        print("\n" + serverResponse.get("message"))
+        logInLoop = not serverResponse.get("status")
 
-            elif serverResponse == "Username valid":
-                validUsername = True
+    while True:
 
-        validPassword = False
-        while not validPassword:
-            password = util.inputpassword()
-            sendMessageToServer(password)
+        mainMenuCommand = getMainMenuCommand()
+        if mainMenuCommand == "1":
+            checkMails()
 
-            serverResponse = receiveMessageFromServer()
-            if serverResponse == "Le mot de passe est invalide. Veuillez réessayer.":
-                print(serverResponse)
+        elif mainMenuCommand == "2":
+            sendMails()
 
-            elif serverResponse == "Password valid":
-                validPassword = True
+        elif mainMenuCommand == "3":
+            checkStats()
 
-    #         password = util.inputpassword()
-    #         sendMessageToServer(password)
-    #
-    #         serverResponse = receiveMessageFromServer()
-    #         if serverResponse == "Le nom d'utilisateur est déjà utilisé. Veuillez réessayer.":
-    #             print(serverResponse)
-    #             continue
-    #         elif serverResponse == "Le mot de passe est invalide. Veuillez réessayer.":
-    #             print(serverResponse)
-    #             continue
-    #         else:
-    #             createAccountSuccessful = True
-    #
-    # else:
-    #     logIn()
-
-
-# def main():
-#
-#     logInCommand = getLoginCommand()
-#     if logInCommand == "1":
-#         createAccount()
-#     else:
-#         logIn()
-#
-#     mainMenuCommand = getMainMenuCommand()
-#     if mainMenuCommand == "1":
-#         checkMails()
-#     elif mainMenuCommand == "2":
-#         sendMails()
-#     elif mainMenuCommand == "3":
-#         checkStats()
-#     else:
-#         quit()
+        elif mainMenuCommand == "4":
+            endConnection()
 
 
 if __name__ == "__main__":

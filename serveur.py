@@ -34,31 +34,24 @@ def passwordMatches(password, filePath):
         return originalHash == enteredHash
 
 
-def sendMessageToClient(message):
-    SERVER_SOCKET.send(message.encode())
-
-
 def logIn(username, password):
-    successfulLogIn = False
-    while not successfulLogIn:
-        successfulLogIn, message = tryToLogIn(username, password)
-        data = {"status": successfulLogIn, "message": message}
-        sendMessageToClient(str(data))
+    while not tryToLogIn(username, password):
+        continue
+    # TODO Trouver comment communiquer avec le client
+    #sendCommandToClient(showOptionMenu)
 
 
 def tryToLogIn(username, password):
-    filePath = f"{username}/config.txt"
+    message = ""
 
+    filePath = f"{username}/config.txt"
     if not util.checkIfFileExists(filePath):
         message = "Le nom d'utilisateur entré n'existe pas. Veuillez recommencer"
-        return False, message
-
+        return False
     if not passwordMatches(password, filePath):
         message = "Le mot de passe entré est invalide. Veuillez recommencer"
-        return False, message
-
-    message = f"Bienvenue {username}"
-    return True, message
+        return False
+    return True
 
 
 def usernameIsValid(username):
@@ -83,19 +76,8 @@ def createNewSocket():
     return serverSocket
 
 
-def accountExists(username):
-    return util.checkIfFileExists(f"{username}/config.txt")
-
-
 def createAccount(username, password):
-    if accountExists(username):
-        data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé"}
-
-    else:
-        createUserConfigFile(username, password)
-        data = {"status": True, "message": "Compte créé avec succès"}
-
-    sendMessageToClient(str(data))
+    createUserConfigFile(username, password)
 
 
 def startSocket(serverSocket):
@@ -104,56 +86,23 @@ def startSocket(serverSocket):
     print(f"Listening on port {PORT}")
 
 
-def sendMail(sender, recipient, subject, message):
-    util.sendMail(sender, recipient, subject, message)
-
-
 def main():
-    startSocket(SERVER_SOCKET)
+    serverSocket = createNewSocket()
+    startSocket(serverSocket)
 
-    # Login/Signup loop
     while True:
-        connection, address = SERVER_SOCKET.accept()
+
+        connection, address = serverSocket.accept()
+
         accountData = eval(connection.recv(1024).decode())
 
         if accountData.get("command") == "login":
             logIn(accountData.get("username"), accountData.get("password"))
-            break
 
         elif accountData.get("command") == "signup":
             createAccount(accountData.get("username"), accountData.get("password"))
-            break
-
-    # Main menu loop
-    while True:
-        connection, address = SERVER_SOCKET.accept()
-        commandData = eval(connection.recv(1024).decode())
-
-        if commandData.get("command") == "sendMail":
-            sender = commandData.get("sender")
-            recipient = commandData.get("recipient")
-            subject = commandData.get("subject")
-            message = commandData.get("message")
-
-            sendMail(sender, recipient, subject, message)
-            continue
-
-        elif commandData.get("command") == "checkMails":
-            checkMails()
-            continue
-
-        elif commandData.get("command") == "stats":
-            showStats()
-            continue
-
-        elif commandData.get("comand") == "quit":
-            break
-
-        else:
-            raise ValueError("Command not recognized")
 
 
 if __name__ == "__main__":
     PORT = getParserArgument().port
-    SERVER_SOCKET = createNewSocket()
     main()

@@ -55,7 +55,6 @@ def createAccount():
     sendMessageToServer(message)
 
 
-
 def logIn():
     username, password = getAccountCredentials()
     data = {"command": "login", "username": username, "password": password}
@@ -101,47 +100,32 @@ def createSocket():
 
 
 def sendMessageToServer(message):
+    #CLIENT_SOCKET.send(bytes(message, encoding="utf-8"))
     CLIENT_SOCKET.send(message.encode())
 
 
-def receiveMessageFromServer():
-    data = CLIENT_SOCKET.recv(512).decode()
+def receiveMessageFromServer(clientSocket):
+    data = clientSocket.recv(512)
     return data
 
 
-def checkMails():
-    pass
-
-
 def main():
-    logInLoop = True
 
-    while logInLoop:
-        logInCommand = getLoginCommand()
-        if logInCommand == "1":
-            createAccount()
+    logInCommand = getLoginCommand()
+    if logInCommand == "1":
+        createAccount()
+    else:
+        logIn()
 
-        elif logInCommand == "2":
-            logIn()
-
-        serverResponse = receiveMessageFromServer()
-        print(serverResponse)
-        logInLoop = not serverResponse.get("status")
-
-    while True:
-
-        mainMenuCommand = getMainMenuCommand()
-        if mainMenuCommand == "1":
-            checkMails()
-
-        elif mainMenuCommand == "2":
-            sendMails()
-
-        elif mainMenuCommand == "3":
-            checkStats()
-
-        elif mainMenuCommand == "4":
-            quit()
+    mainMenuCommand = getMainMenuCommand()
+    if mainMenuCommand == "1":
+        checkMails()
+    elif mainMenuCommand == "2":
+        sendMails()
+    elif mainMenuCommand == "3":
+        checkStats()
+    else:
+        quit()
 
 
 if __name__ == "__main__":

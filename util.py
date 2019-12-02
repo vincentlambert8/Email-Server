@@ -2,6 +2,8 @@ import getpass
 from hashlib import sha256
 from os import path, mkdir
 from re import search
+import smtplib
+from email.mime.text import MIMEText
 
 
 def searchString(regex, string):
@@ -23,3 +25,14 @@ def checkIfFileExists(filePath):
 def createDirectory(name):
     mkdir(name)
     print("made dir")
+
+
+def sendMail(sender, recipient, subject, message):
+    msg = MIMEText(message)
+    msg["From"] = sender
+    msg["To"] = recipient
+    msg["Subject"] = subject
+
+    smtpConnection = smtplib.SMTP(host="smtp.ulaval.ca", timeout=10)
+    smtpConnection.sendmail(sender, recipient, msg.as_string())
+    smtpConnection.quit()

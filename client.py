@@ -130,7 +130,7 @@ def main():
             logIn()
 
         serverResponse = eval(receiveMessageFromServer())
-        print(serverResponse.get("message"))
+        print("\n" + serverResponse.get("message"))
         logInLoop = not serverResponse.get("status")
 
     while True:

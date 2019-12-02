@@ -40,10 +40,10 @@ def sendMessageToClient(message):
 
 def logIn(username, password):
     successfulLogIn = False
-    while not successfulLogIn:
-        successfulLogIn, message = tryToLogIn(username, password)
-        data = {"status": successfulLogIn, "message": message}
-        sendMessageToClient(str(data))
+    successfulLogIn, message = tryToLogIn(username, password)
+    data = {"status": successfulLogIn, "message": message}
+    sendMessageToClient(str(data))
+    return successfulLogIn
 
 
 def tryToLogIn(username, password):
@@ -88,21 +88,22 @@ def accountExists(username):
 
 
 def createAccount(username, password):
-    successfulAccountCreation = False
-    while not successfulAccountCreation:
-        if username == "":
-            data = {"status": False, "message": "Le nom d'utilisateur est vide. Veuillez recommencer"}
-            sendMessageToClient(str(data))
+    accountCreated = False
+    if username == "":
+        data = {"status": False, "message": "Le nom d'utilisateur est vide. Veuillez recommencer"}
+        sendMessageToClient(str(data))
 
-        elif accountExists(username):
-            data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé. Veuillez recommencer"}
-            sendMessageToClient(str(data))
+    elif accountExists(username):
+        data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé. Veuillez recommencer"}
+        sendMessageToClient(str(data))
 
-        else:
-            createUserConfigFile(username, password)
-            data = {"status": True, "message": "Compte créé avec succès"}
-            sendMessageToClient(str(data))
-            successfulAccountCreation = True
+    else:
+        createUserConfigFile(username, password)
+        data = {"status": True, "message": "Compte créé avec succès"}
+        sendMessageToClient(str(data))
+        accountCreated = True
+
+    return accountCreated
 
 
 def startSocket(serverSocket):
@@ -121,12 +122,12 @@ def main():
         accountData = eval(CONNECTION.recv(1024).decode())
 
         if accountData.get("command") == "login":
-            logIn(accountData.get("username"), accountData.get("password"))
-            break
+            if logIn(accountData.get("username"), accountData.get("password")):
+                break
 
         elif accountData.get("command") == "signup":
-            createAccount(accountData.get("username"), accountData.get("password"))
-            break
+            if createAccount(accountData.get("username"), accountData.get("password")):
+                break
 
     # Main menu loop
     while True:

@@ -35,7 +35,7 @@ def passwordMatches(password, filePath):
 
 
 def sendMessageToClient(message):
-    SERVER_SOCKET.send(message.encode())
+    CONNECTION.send(message.encode())
 
 
 def logIn(username, password):
@@ -88,14 +88,21 @@ def accountExists(username):
 
 
 def createAccount(username, password):
-    if accountExists(username):
-        data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé"}
+    successfulAccountCreation = False
+    while not successfulAccountCreation:
+        if username == "":
+            data = {"status": False, "message": "Le nom d'utilisateur est vide. Veuillez recommencer"}
+            sendMessageToClient(str(data))
 
-    else:
-        createUserConfigFile(username, password)
-        data = {"status": True, "message": "Compte créé avec succès"}
+        elif accountExists(username):
+            data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé. Veuillez recommencer"}
+            sendMessageToClient(str(data))
 
-    sendMessageToClient(str(data))
+        else:
+            createUserConfigFile(username, password)
+            data = {"status": True, "message": "Compte créé avec succès"}
+            sendMessageToClient(str(data))
+            successfulAccountCreation = True
 
 
 def startSocket(serverSocket):
@@ -109,12 +116,9 @@ def sendMail(sender, recipient, subject, message):
 
 
 def main():
-    startSocket(SERVER_SOCKET)
-
     # Login/Signup loop
     while True:
-        connection, address = SERVER_SOCKET.accept()
-        accountData = eval(connection.recv(1024).decode())
+        accountData = eval(CONNECTION.recv(1024).decode())
 
         if accountData.get("command") == "login":
             logIn(accountData.get("username"), accountData.get("password"))
@@ -126,8 +130,7 @@ def main():
 
     # Main menu loop
     while True:
-        connection, address = SERVER_SOCKET.accept()
-        commandData = eval(connection.recv(1024).decode())
+        commandData = eval(CONNECTION.recv(1024).decode())
 
         if commandData.get("command") == "sendMail":
             sender = commandData.get("sender")
@@ -146,7 +149,7 @@ def main():
             showStats()
             continue
 
-        elif commandData.get("comand") == "quit":
+        elif commandData.get("command") == "quit":
             break
 
         else:
@@ -156,4 +159,7 @@ def main():
 if __name__ == "__main__":
     PORT = getParserArgument().port
     SERVER_SOCKET = createNewSocket()
-    main()
+    startSocket(SERVER_SOCKET)
+    while True:
+        CONNECTION, ADDRESS = SERVER_SOCKET.accept()
+        main()

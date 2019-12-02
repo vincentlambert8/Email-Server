@@ -55,7 +55,6 @@ def createAccount():
     sendMessageToServer(message)
 
 
-
 def logIn():
     username, password = getAccountCredentials()
     data = {"command": "login", "username": username, "password": password}
@@ -113,6 +112,12 @@ def checkMails():
     pass
 
 
+def endConnection():
+    data = {"command": "quit"}
+    sendMessageToServer(str(data))
+    quit()
+
+
 def main():
     logInLoop = True
 
@@ -124,8 +129,8 @@ def main():
         elif logInCommand == "2":
             logIn()
 
-        serverResponse = receiveMessageFromServer()
-        print(serverResponse)
+        serverResponse = eval(receiveMessageFromServer())
+        print(serverResponse.get("message"))
         logInLoop = not serverResponse.get("status")
 
     while True:
@@ -141,7 +146,7 @@ def main():
             checkStats()
 
         elif mainMenuCommand == "4":
-            quit()
+            endConnection()
 
 
 if __name__ == "__main__":

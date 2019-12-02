@@ -76,19 +76,19 @@ def createNewSocket():
     return serverSocket
 
 
+# def startSocket(serverSocket):
+#     serverSocket.listen(5)
+
+
 def createAccount(username, password):
-    createUserConfigFile(username, password)
-
-
-def startSocket(serverSocket):
-    print("Starting server...")
-    serverSocket.listen(5)
-    print(f"Listening on port {PORT}")
+    createUserDirectory(username, password)
 
 
 def main():
     serverSocket = createNewSocket()
-    startSocket(serverSocket)
+    #startSocket(serverSocket)
+
+    serverSocket.listen(5)
 
     while True:
 
@@ -99,7 +99,7 @@ def main():
         if accountData.get("command") == "login":
             logIn(accountData.get("username"), accountData.get("password"))
 
-        elif accountData.get("command") == "signup":
+        elif accountData.get("command" == "signup"):
             createAccount(accountData.get("username"), accountData.get("password"))
 
 

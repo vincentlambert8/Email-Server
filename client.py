@@ -36,13 +36,13 @@ def getUsername():
     return input("Nom d'utilisateur: ")
 
 
-def getPassword():
-    return util.inputPassword()
+def getpassword():
+    return util.inputpassword()
 
 
 def getAccountCredentials():
     username = getUsername()
-    password = getPassword()
+    password = getpassword()
 
     return username, password
 

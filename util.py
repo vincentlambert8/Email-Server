@@ -12,7 +12,7 @@ def hashPassword(password):
     return sha256(password.encode()).hexdigest()
 
 
-def inputPassword():
+def inputpassword():
     return getpass.getpass("Mot de passe: ")
 
 
@@ -22,4 +22,3 @@ def checkIfFileExists(filePath):
 
 def createDirectory(name):
     mkdir(name)
-    print("made dir")

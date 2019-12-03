@@ -185,29 +185,45 @@ def getMailListFromFiles(files):
     mails = dict()
     i = 1
     for file in files:
-        subject = util.getSubjectOfMailFile(file)
-        mails.update({i: subject})
+        mail = util.createMIMEObjectFromFile(file)
+        mails.update({i: mail})
         i += 1
 
     return mails
 
 
-def getUserMailList(username):
+def getUserMailFilePaths(username):
     directoryPath = f"{username}/"
     files = util.getFilesInDirectory(directoryPath)
     files.remove(f"{directoryPath}config.txt")
 
-    mails = getMailListFromFiles(files)
+    return files
+
+
+def getUserMailList(username):
+    mailFilePaths = getUserMailFilePaths(username)
+    mails = getMailListFromFiles(mailFilePaths)
     return mails
+
+
+def getSubjectListFromMails(mailList):
+    subjects = dict()
+    for i in range(1, len(mailList) + 1):
+        mail = mailList.get(i)
+        subject = util.getSubjectOfMail(mail)
+        subjects.update({i: subject})
+
+    return subjects
 
 
 def sendStats(username):
     numberOfMails = getNumberOfMails(username)
     directorySize = getUserDirectorySize(username)
     mailList = getUserMailList(username)
+    subjectList = getSubjectListFromMails(mailList)
 
     data = {"status": True, "username": username, "numberOfMails": numberOfMails, "directorySize": directorySize,
-            "mailList": mailList, "message": "Les statistiques ont été receuillies avec succès."}
+            "mailList": subjectList, "message": "Les statistiques ont été receuillies avec succès."}
     sendMessageToClient(str(data))
 
 

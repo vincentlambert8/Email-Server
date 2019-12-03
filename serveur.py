@@ -160,6 +160,11 @@ def sendOutsideMail(sender, recipient, msg):
 
 
 def sendMail(sender, recipient, subject, body):
+    if not emailAddressIsValid(recipient):
+        data = {"status": False, "message": "L'adresse email du destinataire est invalide. Veuillez recommencer."}
+        sendMessageToClient(str(data))
+        return
+
     recipientHost = recipient.split('@')[1]
     msg = util.getMessageAsMIME(sender, recipient, subject, body)
 

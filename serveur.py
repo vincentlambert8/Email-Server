@@ -151,8 +151,7 @@ def sendLocalMail(recipient, msg):
 def sendOutsideMail(sender, recipient, msg):
     try:
         util.sendMail(sender, recipient, msg)
-    except Exception as e:
-        print(e)
+    except:
         data = {"status": False, "message": "Le courriel n'a pas pu être envoyé. Veuillez recommencer"}
     else:
         data = {"status": True, "message": f"Le courriel a été envoyé avec succès à {recipient}."}

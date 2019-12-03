@@ -44,3 +44,7 @@ def getMessageAsMIME(sender, recipient, subject, message):
 
 def getNumberOfFilesInDirectory(directoryPath):
     return len([name for name in listdir(directoryPath)])
+
+
+def getDirectorySize(directoryPath):
+    return path.getsize(directoryPath)

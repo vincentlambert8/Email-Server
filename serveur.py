@@ -227,13 +227,56 @@ def sendStats(username):
     sendMessageToClient(str(data))
 
 
+def checkMails(username):
+    mails = getUserMailList(username)
+    if not mails:
+        data = {"status": False, "message": "La boite de courriel est vide."}
+        sendMessageToClient(str(data))
+        return
+
+    mailContents = dict()
+    for i in mails:
+        mailContents.update({i: getMailContent(mails.get(i))})
+
+    data = {"status": True, "mailList": mailContents, "message": "Accès au courriels effectué avec succès."}
+    sendMessageToClient(str(data))
+
+
+def getMailContent(mail):
+    lines = mail.as_string().split('\n')
+    sender = lines[3]
+    recipient = lines[4]
+    subject = lines[5]
+    body = '\n'
+    skippedLines = {0, 1, 2, 3, 4, 5}
+    for i, line in enumerate(lines):
+        if i in skippedLines:
+            continue
+        body += line
+    mailContent = {"sender": sender, "recipient": recipient, "subject": subject, "body": body}
+
+    return mailContent
+
+
+def receiveMessageFromClient():
+    try:
+        return eval(CONNECTION.recv(1024).decode())
+    except:
+        return -1
+
+
 def main():
     if not util.checkIfFileExists("ERREUR/"):
         util.createDirectory("ERREUR")
 
+    loginFailed = False
+
     # Login/Signup loop
     while True:
-        accountData = eval(CONNECTION.recv(1024).decode())
+        accountData = receiveMessageFromClient()
+        if accountData == -1:
+            loginFailed = True
+            break
 
         if accountData.get("command") == "login":
             if logIn(accountData.get("username"), accountData.get("password")):
@@ -245,7 +288,12 @@ def main():
 
     # Main menu loop
     while True:
-        commandData = eval(CONNECTION.recv(1024).decode())
+        if loginFailed:
+            break
+
+        commandData = receiveMessageFromClient()
+        if commandData == -1:
+            break
 
         if commandData.get("command") == "sendMail":
             sender = commandData.get("sender")
@@ -256,7 +304,8 @@ def main():
             sendMail(sender, recipient, subject, body)
 
         elif commandData.get("command") == "checkMails":
-            checkMails()
+            username = commandData.get("username")
+            checkMails(username)
 
         elif commandData.get("command") == "checkStats":
             username = commandData.get("username")

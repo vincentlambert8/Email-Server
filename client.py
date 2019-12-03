@@ -106,7 +106,7 @@ def sendMessageToServer(message):
 
 
 def receiveMessageFromServer():
-    data = CLIENT_SOCKET.recv(1024).decode()
+    data = CLIENT_SOCKET.recv(2048).decode()
     return data
 
 
@@ -138,19 +138,25 @@ def showMails(mails):
     numberOfMails = len(mails)
     while True:
         showInbox(mails, numberOfMails)
-        mailNumber = int(input("\nEntrer le numéro du courriel pour le consulter: "))
-        if mailNumber < 0 or mailNumber > numberOfMails:
-            print(f"Le numéro entré n'est pas compris entre 1 et {numberOfMails}. Veuillez recommencer.")
+        mailNumber = input("\nEntrer le numéro du courriel pour le consulter: ")
+        try:
+            mailNumber = int(mailNumber)
+        except:
+            print("\nLa commande entrée n'est pas un nombre. Veuillez recommencer.")
             continue
+        else:
+            if mailNumber < 0 or mailNumber > numberOfMails:
+                print(f"Le numéro entré n'est pas compris entre 1 et {numberOfMails}. Veuillez recommencer.")
+                continue
 
-        print()
-        showMail(mails.get(mailNumber))
+            print()
+            showMail(mails.get(mailNumber))
 
-        print("\nVoulez-vous consulter un autre courriel ? (Oui ou Non)")
-        command = input()
+            print("\nVoulez-vous consulter un autre courriel ? (Oui ou Non)")
+            command = input()
 
-        if command.lower() == "non":
-            break
+            if command.lower() == "non":
+                break
 
 
 def checkMails(username):

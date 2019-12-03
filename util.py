@@ -48,11 +48,17 @@ def getNumberOfFilesInDirectory(directoryPath):
 
 
 def getDirectorySize(directoryPath):
-    return path.getsize(directoryPath)
+    files = getFilesInDirectory(directoryPath)
+    size = 0
+    for file in files:
+        size += path.getsize(file)
+    return size
 
 
 def getFilesInDirectory(directoryPath):
-    return [f"{directoryPath}{name}" for name in listdir(directoryPath)]
+    fileList = [f"{directoryPath}{name}" for name in listdir(directoryPath)]
+    fileList.sort()
+    return fileList
 
 
 def createMIMEObjectFromFile(filePath):

@@ -253,14 +253,25 @@ def getMailContent(mail):
     return mailContent
 
 
+def receiveMessageFromClient():
+    try:
+        return eval(CONNECTION.recv(1024).decode())
+    except:
+        return -1
+
 
 def main():
     if not util.checkIfFileExists("ERREUR/"):
         util.createDirectory("ERREUR")
 
+    loginFailed = False
+
     # Login/Signup loop
     while True:
-        accountData = eval(CONNECTION.recv(1024).decode())
+        accountData = receiveMessageFromClient()
+        if accountData == -1:
+            loginFailed = True
+            break
 
         if accountData.get("command") == "login":
             if logIn(accountData.get("username"), accountData.get("password")):
@@ -272,7 +283,12 @@ def main():
 
     # Main menu loop
     while True:
-        commandData = eval(CONNECTION.recv(1024).decode())
+        if loginFailed:
+            break
+
+        commandData = receiveMessageFromClient()
+        if commandData == -1:
+            break
 
         if commandData.get("command") == "sendMail":
             sender = commandData.get("sender")

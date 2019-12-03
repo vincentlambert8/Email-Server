@@ -28,7 +28,7 @@ def createDirectory(name):
 
 
 def sendMail(sender, recipient, msg):
-
+    print(sender)
     smtpConnection = smtplib.SMTP(host="smtp.ulaval.ca", timeout=10)
     smtpConnection.sendmail(sender, recipient, msg.as_string())
     smtpConnection.quit()

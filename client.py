@@ -125,7 +125,7 @@ def sendMail(username):
     subject = input("Objet du message: ")
     print("Corps du message:")
     body = input("")
-    data = {"command": "sendMail", "sender:": username, "recipient": recipient, "subject": subject, "body": body}
+    data = {"command": "sendMail", "sender": username, "recipient": recipient, "subject": subject, "body": body}
 
     print("\nLe message est en cours d'envoi. Cela peut prendre quelques secondes.")
     sendMessageToServer(str(data))

@@ -53,6 +53,7 @@ def createAccount():
     message = str(data)
 
     sendMessageToServer(message)
+    return username
 
 
 def logIn():
@@ -62,6 +63,7 @@ def logIn():
     message = str(data)
 
     sendMessageToServer(message)
+    return username
 
 
 def checkMainMenuCommand(mainMenuCommand):
@@ -119,35 +121,49 @@ def endConnection():
     quit()
 
 
-def main():
-    logInLoop = True
+def sendMail(username):
+    recipient = input("Adresse de destination: ")
+    subject = input("Objet du message: ")
+    print("Corps du message:")
+    body = input("")
+    data = {"command": "sendMail", "sender:": username, "recipient": recipient, "subject": subject, "body": body}
 
+    print("\nLe message est en cours d'envoi. Cela peut prendre quelques secondes.")
+    sendMessageToServer(str(data))
+
+
+def main():
+    username = ""
+
+    logInLoop = True
     while logInLoop:
         logInCommand = getLoginCommand()
         if logInCommand == "1":
-            createAccount()
+            username = createAccount()
 
         elif logInCommand == "2":
-            logIn()
+            username = logIn()
 
         serverResponse = eval(receiveMessageFromServer())
         print("\n" + serverResponse.get("message"))
         logInLoop = not serverResponse.get("status")
 
     while True:
-
         mainMenuCommand = getMainMenuCommand()
         if mainMenuCommand == "1":
             checkMails()
 
         elif mainMenuCommand == "2":
-            sendMails()
+            sendMail(username)
 
         elif mainMenuCommand == "3":
             checkStats()
 
         elif mainMenuCommand == "4":
             endConnection()
+
+        serverResponse = eval(receiveMessageFromServer())
+        print("\n" + serverResponse.get("message"))
 
 
 if __name__ == "__main__":

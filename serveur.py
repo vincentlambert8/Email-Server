@@ -111,23 +111,58 @@ def checkLogInCommand(logInCommand):
     return logInCommand == "1" or logInCommand == "2"
 
 
-def getAccountCredentials(serverSocket):
-    username = getUsername(serverSocket)
-    password = getpassword(serverSocket)
-
-    return username, password
+def getNumberOfMails(recipient):
+    directoryPath = f"{recipient}/"
+    return util.getNumberOfFilesInDirectory(directoryPath) - 1
 
 
-def getUsername(serverSocket):
-    message = "Nom d'utilisateur : "
-    serverSocket.send(message.encode())
-    username = serverSocket.recv(1024).decode()
-    return username
+def createMailFile(filePath, msg):
+
+    with open(filePath, "w") as file:
+        file.write(msg.as_string())
 
 
-def getpassword(serverSocket):
-    password = serverSocket.recv(1024).decode()
-    return password
+def sendLocalMail(recipient, msg):
+    directoryPath = ""
+
+    if not util.checkIfFileExists(f"{recipient}/config.txt"):
+        directoryPath = "ERREUR/"
+        data = {"status": False, "message": "Le destinataire n'existe pas. Le message a été déposé dans le dossier "
+                                            "'ERREUR'."}
+        sendMessageToClient(str(data))
+
+    else:
+        directoryPath = f"{recipient}/"
+        data = {"status": True, "message": "Le courriel a bien été envoyé."}
+        sendMessageToClient(str(data))
+
+    numberOfMails = getNumberOfMails(recipient)
+    print(f"number of mail: {numberOfMails}")
+    filePath = f"{directoryPath}/{numberOfMails + 1}"
+    createMailFile(filePath, msg)
+
+
+def sendOutsideMail(sender, recipient, msg):
+    try:
+        util.sendMail(sender, recipient, msg)
+    except:
+        data = {"status": False, "message": "Le courriel n'a pas pu être envoyé. Veuillez recommencer"}
+    else:
+        data = {"status": True, "message": f"Le courriel a été envoyé avec succès à {recipient}."}
+    finally:
+        sendMessageToClient(str(data))
+
+
+def sendMail(sender, recipient, subject, body):
+    recipientHost = recipient.split('@')[1]
+    print(recipient)
+    print(recipientHost)
+    msg = util.getMessageAsMIME(sender, recipient, subject, body)
+
+    if recipientHost == "glo2000.ca":
+        sendLocalMail(recipient, msg)
+    else:
+        sendOutsideMail(sender, recipient, msg)
 
 
 def main():
@@ -151,18 +186,15 @@ def main():
             sender = commandData.get("sender")
             recipient = commandData.get("recipient")
             subject = commandData.get("subject")
-            message = commandData.get("message")
+            body = commandData.get("body")
 
-            sendMail(sender, recipient, subject, message)
-            continue
+            sendMail(sender, recipient, subject, body)
 
         elif commandData.get("command") == "checkMails":
             checkMails()
-            continue
 
         elif commandData.get("command") == "stats":
             showStats()
-            continue
 
         elif commandData.get("command") == "quit":
             break

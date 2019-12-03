@@ -136,14 +136,14 @@ def sendLocalMail(recipient, msg):
         data = {"status": False, "message": "Le destinataire n'existe pas. Le message a été déposé dans le dossier "
                                             "'ERREUR'."}
         sendMessageToClient(str(data))
+        numberOfMails = util.getNumberOfFilesInDirectory(directoryPath)
 
     else:
         directoryPath = f"{recipient}/"
         data = {"status": True, "message": "Le courriel a bien été envoyé."}
         sendMessageToClient(str(data))
+        numberOfMails = getNumberOfMails(recipient)
 
-    numberOfMails = getNumberOfMails(recipient)
-    print(f"number of mail: {numberOfMails}")
     filePath = f"{directoryPath}/{numberOfMails + 1}"
     createMailFile(filePath, msg)
 
@@ -171,6 +171,9 @@ def sendMail(sender, recipient, subject, body):
 
 
 def main():
+    if not util.checkIfFileExists("ERREUR/"):
+        util.createDirectory("ERREUR")
+
     # Login/Signup loop
     while True:
         accountData = eval(CONNECTION.recv(1024).decode())

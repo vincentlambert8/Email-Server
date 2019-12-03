@@ -169,6 +169,41 @@ def sendMail(sender, recipient, subject, body):
         sendOutsideMail(sender, recipient, msg)
 
 
+def getUserDirectorySize(username):
+    directoryPath = f"{username}/"
+    return util.getDirectorySize(directoryPath)
+
+
+def getMailListFromFiles(files):
+    mails = dict()
+    i = 1
+    for file in files:
+        subject = util.getSubjectOfMailFile(file)
+        mails.update({i: subject})
+        i += 1
+
+    return mails
+
+
+def getUserMailList(username):
+    directoryPath = f"{username}/"
+    files = util.getFilesInDirectory(directoryPath)
+    files.remove(f"{directoryPath}config.txt")
+
+    mails = getMailListFromFiles(files)
+    return mails
+
+
+def sendStats(username):
+    numberOfMails = getNumberOfMails(username)
+    directorySize = getUserDirectorySize(username)
+    mailList = getUserMailList(username)
+
+    data = {"status": True, "username": username, "numberOfMails": numberOfMails, "directorySize": directorySize,
+            "mailList": mailList, "message": "Les statistiques ont été receuillies avec succès."}
+    sendMessageToClient(str(data))
+
+
 def main():
     if not util.checkIfFileExists("ERREUR/"):
         util.createDirectory("ERREUR")
@@ -200,8 +235,9 @@ def main():
         elif commandData.get("command") == "checkMails":
             checkMails()
 
-        elif commandData.get("command") == "stats":
-            showStats()
+        elif commandData.get("command") == "checkStats":
+            username = commandData.get("username")
+            sendStats(username)
 
         elif commandData.get("command") == "quit":
             break

@@ -131,6 +131,32 @@ def sendMail(username):
     sendMessageToServer(str(data))
 
 
+def getStats(username):
+    data = {"command": "checkStats", "username": username}
+    sendMessageToServer(str(data))
+    return eval(receiveMessageFromServer())
+
+
+def checkStats(username):
+    stats = getStats(username)
+    showStats(stats)
+
+
+def showStats(stats):
+    username = stats.get("username")
+    numberOfMails = stats.get("numberOfMails")
+    directorySize = stats.get("directorySize")
+    mailList = stats.get("mailList")
+
+    print('\n' + f"------- Information sur l'utilisateur {username} -------\n")
+    print(f"Votre boite contient {numberOfMails} courriels.")
+    print(f"La taille totale de la boite de courriels est de {directorySize} octets.")
+    print("Voici une liste des courriels dans la boite:")
+    for i in range(1, len(mailList) + 1):
+        subject = mailList.get(i)
+        print(f"{i} - {subject}")
+
+
 def main():
     username = ""
 
@@ -156,7 +182,8 @@ def main():
             sendMail(username)
 
         elif mainMenuCommand == "3":
-            checkStats()
+            checkStats(username)
+            continue
 
         elif mainMenuCommand == "4":
             endConnection()

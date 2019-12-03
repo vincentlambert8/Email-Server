@@ -4,6 +4,7 @@ from os import path, mkdir, listdir
 from re import search
 import smtplib
 from email.mime.text import MIMEText
+from email.parser import Parser
 
 
 def searchString(regex, string):
@@ -48,3 +49,17 @@ def getNumberOfFilesInDirectory(directoryPath):
 
 def getDirectorySize(directoryPath):
     return path.getsize(directoryPath)
+
+
+def getFilesInDirectory(directoryPath):
+    return [f"{directoryPath}{name}" for name in listdir(directoryPath)]
+
+
+def createMIMEObjectFromFile(filePath):
+    with open(filePath, "r") as file:
+        return Parser().parse(file)
+
+
+def getSubjectOfMailFile(filePath):
+    msg = createMIMEObjectFromFile(filePath)
+    return msg["Subject"]

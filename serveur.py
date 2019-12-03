@@ -227,6 +227,33 @@ def sendStats(username):
     sendMessageToClient(str(data))
 
 
+def checkMails(username):
+    mails = getUserMailList(username)
+    mailContents = dict()
+    for i in mails:
+        mailContents.update({i: getMailContent(mails.get(i))})
+
+    data = {"status": True, "mailList": mailContents, "message": "Accès au courriels effectué avec succès."}
+    sendMessageToClient(str(data))
+
+
+def getMailContent(mail):
+    lines = mail.as_string().split('\n')
+    sender = lines[3]
+    recipient = lines[4]
+    subject = lines[5]
+    body = '\n'
+    skippedLines = {0, 1, 2, 3, 4, 5}
+    for i, line in enumerate(lines):
+        if i in skippedLines:
+            continue
+        body += line
+    mailContent = {"sender": sender, "recipient": recipient, "subject": subject, "body": body}
+
+    return mailContent
+
+
+
 def main():
     if not util.checkIfFileExists("ERREUR/"):
         util.createDirectory("ERREUR")
@@ -256,7 +283,8 @@ def main():
             sendMail(sender, recipient, subject, body)
 
         elif commandData.get("command") == "checkMails":
-            checkMails()
+            username = commandData.get("username")
+            checkMails(username)
 
         elif commandData.get("command") == "checkStats":
             username = commandData.get("username")

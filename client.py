@@ -110,8 +110,52 @@ def receiveMessageFromServer():
     return data
 
 
-def checkMails():
-    pass
+def getMails(username):
+    data = {"command": "checkMails", "username": username}
+    sendMessageToServer(str(data))
+
+    serverResponse = eval(receiveMessageFromServer())
+    if not serverResponse.get("status"):
+        print(serverResponse.get("message"))
+        return
+
+    return serverResponse.get("mailList")
+
+
+def showMail(mailContent):
+    for key in mailContent:
+        print(mailContent.get(key))
+
+
+def showInbox(mails, numberOfMails):
+    print(f"\nVotre boite de réception contient {numberOfMails} messages: ")
+    for i in range(1, len(mails) + 1):
+        subject = mails.get(i).get("subject")
+        print(f"{i} - {subject[8:]}")
+
+
+def showMails(mails):
+    numberOfMails = len(mails)
+    while True:
+        showInbox(mails, numberOfMails)
+        mailNumber = int(input("\nEntrer le numéro du courriel pour le consulter: "))
+        if mailNumber < 0 or mailNumber > numberOfMails:
+            print(f"Le numéro entré n'est pas compris entre 1 et {numberOfMails}. Veuillez recommencer.")
+            continue
+
+        print()
+        showMail(mails.get(mailNumber))
+
+        print("\nVoulez-vous consulter un autre courriel ? (Oui ou Non)")
+        command = input()
+
+        if command.lower() == "non":
+            break
+
+
+def checkMails(username):
+    mails = getMails(username)
+    showMails(mails)
 
 
 def endConnection():
@@ -134,7 +178,9 @@ def sendMail(username):
 def getStats(username):
     data = {"command": "checkStats", "username": username}
     sendMessageToServer(str(data))
-    return eval(receiveMessageFromServer())
+    serverResponse = eval(receiveMessageFromServer())
+    print(serverResponse)
+    return serverResponse
 
 
 def checkStats(username):
@@ -178,7 +224,8 @@ def main():
     while True:
         mainMenuCommand = getMainMenuCommand()
         if mainMenuCommand == "1":
-            checkMails()
+            checkMails(username)
+            continue
 
         elif mainMenuCommand == "2":
             sendMail(username)

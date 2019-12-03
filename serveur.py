@@ -10,7 +10,7 @@ import sys
 def getParserArgument():
     parser = optparse.OptionParser()
     parser.add_option("-p", "--port", dest="port", type=int, default=1400,
-                        help="Port sur lequel envoyer et écouter les messages")
+                      help="Port sur lequel envoyer et écouter les messages")
     return parser.parse_args(sys.argv[1:])[0]
 
 
@@ -32,14 +32,13 @@ def passwordMatches(password, filePath):
         originalHash = file.readline()
         enteredHash = util.hashPassword(password)
         return originalHash == enteredHash
-    
+
 
 def sendMessageToClient(message):
     CONNECTION.send(message.encode())
 
 
 def logIn(username, password):
-    successfulLogIn = False
     successfulLogIn, message = tryToLogIn(username, password)
     data = {"status": successfulLogIn, "message": message}
     sendMessageToClient(str(data))
@@ -48,14 +47,17 @@ def logIn(username, password):
 
 
 def tryToLogIn(username, password):
-    filePath = f"{username}/config.txt"
+    if username == "":
+        message = "Le nom d'utilisateur entré est vide. Veuillez recommencer."
+        return False, message
 
+    filePath = f"{username}/config.txt"
     if not util.checkIfFileExists(filePath):
-        message = "Le nom d'utilisateur entré n'existe pas. Veuillez recommencer"
+        message = "Le nom d'utilisateur entré n'existe pas. Veuillez recommencer."
         return False, message
 
     if not passwordMatches(password, filePath):
-        message = "Le mot de passe entré est invalide. Veuillez recommencer"
+        message = "Le mot de passe entré est invalide. Veuillez recommencer."
         return False, message
 
     message = f"Bienvenue {username}"
@@ -87,25 +89,22 @@ def createNewSocket():
 def createAccount(username, password):
     accountCreated = False
     if username == "":
-        data = {"status": False, "message": "Le nom d'utilisateur est vide. Veuillez recommencer"}
-        sendMessageToClient(str(data))
+        data = {"status": False, "message": "Le nom d'utilisateur est vide. Veuillez recommencer."}
 
     elif accountExists(username):
-        data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé. Veuillez recommencer"}
-        sendMessageToClient(str(data))
+        data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé. Veuillez recommencer."}
 
     elif not passwordIsValid(password):
         data = {"status": False, "message": "Le mot de passe entré n'est pas conforme. Veuillez recommencer en "
                                             "utilisant un mot de passe contenant de 6 à 12 caractères, au moins une "
-                                            "lettre majuscule et un chiffre."}
-        sendMessageToClient(str(data))
+                                            "lettre majuscule et deux chiffres. Veuillez recommencer."}
 
     else:
         createUserConfigFile(username, password)
-        data = {"status": True, "message": "Compte créé avec succès"}
-        sendMessageToClient(str(data))
+        data = {"status": True, "message": "Compte créé avec succès."}
         accountCreated = True
 
+    sendMessageToClient(str(data))
     return accountCreated
 
 
@@ -123,7 +122,6 @@ def getNumberOfMails(recipient):
 
 
 def createMailFile(filePath, msg):
-
     with open(filePath, "w") as file:
         file.write(msg.as_string())
 
@@ -152,11 +150,16 @@ def sendOutsideMail(sender, recipient, msg):
     try:
         util.sendMail(sender, recipient, msg)
     except:
-        data = {"status": False, "message": "Le courriel n'a pas pu être envoyé. Veuillez recommencer"}
+        data = {"status": False, "message": "Le courriel n'a pas pu être envoyé. Veuillez recommencer."}
     else:
         data = {"status": True, "message": f"Le courriel a été envoyé avec succès à {recipient}."}
     finally:
         sendMessageToClient(str(data))
+
+
+def addressIsLocal(recipient):
+    recipientHost = recipient.split('@')[1]
+    return recipientHost == "glo2000.ca"
 
 
 def sendMail(sender, recipient, subject, body):
@@ -165,10 +168,9 @@ def sendMail(sender, recipient, subject, body):
         sendMessageToClient(str(data))
         return
 
-    recipientHost = recipient.split('@')[1]
     msg = util.getMessageAsMIME(sender, recipient, subject, body)
 
-    if recipientHost == "glo2000.ca":
+    if addressIsLocal(recipient):
         sendLocalMail(recipient, msg)
     else:
         sendOutsideMail(sender, recipient, msg)

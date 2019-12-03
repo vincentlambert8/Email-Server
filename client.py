@@ -77,7 +77,7 @@ def getLoginCommand():
         logInCommand = input()
         successfulCommand = checkLogInCommand(logInCommand)
         if not successfulCommand:
-            print("La commande entrée est invalide. Veuillez entrer un nombre de 1 à 2")
+            print("La commande entrée est invalide. Veuillez entrer un nombre de 1 à 2.")
 
     return logInCommand
 
@@ -89,7 +89,7 @@ def getMainMenuCommand():
         mainMenuCommand = input()
         successfulCommand = checkMainMenuCommand(mainMenuCommand)
         if not successfulCommand:
-            print("La commande entrée est invalide. Veuillez entrer un nombre de 1 à 4")
+            print("La commande entrée est invalide. Veuillez entrer un nombre de 1 à 4.")
 
     return mainMenuCommand
 
@@ -155,6 +155,8 @@ def showStats(stats):
     for i in range(1, len(mailList) + 1):
         subject = mailList.get(i)
         print(f"{i} - {subject}")
+
+    input("\nAppuyer sur Entrée pour revenir au menu...")
 
 
 def main():

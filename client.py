@@ -57,7 +57,6 @@ def createAccount():
 
 
 def logIn():
-    logInSuccessful = False
     username, password = getAccountCredentials()
     data = {"command": "login", "username": username, "password": password}
     message = str(data)

@@ -94,6 +94,12 @@ def createAccount(username, password):
         data = {"status": False, "message": "Le nom d'utilisateur entré est déjà utilisé. Veuillez recommencer"}
         sendMessageToClient(str(data))
 
+    elif not passwordIsValid(password):
+        data = {"status": False, "message": "Le mot de passe entré n'est pas conforme. Veuillez recommencer en "
+                                            "utilisant un mot de passe contenant de 6 à 12 caractères, au moins une "
+                                            "lettre majuscule et un chiffre."}
+        sendMessageToClient(str(data))
+
     else:
         createUserConfigFile(username, password)
         data = {"status": True, "message": "Compte créé avec succès"}

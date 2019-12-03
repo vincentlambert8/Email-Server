@@ -116,8 +116,8 @@ def getMails(username):
 
     serverResponse = eval(receiveMessageFromServer())
     if not serverResponse.get("status"):
-        print(serverResponse.get("message"))
-        return
+        print('\n' + serverResponse.get("message"))
+        return False
 
     return serverResponse.get("mailList")
 
@@ -161,6 +161,9 @@ def showMails(mails):
 
 def checkMails(username):
     mails = getMails(username)
+    if not mails:
+        return
+
     showMails(mails)
 
 
@@ -185,7 +188,6 @@ def getStats(username):
     data = {"command": "checkStats", "username": username}
     sendMessageToServer(str(data))
     serverResponse = eval(receiveMessageFromServer())
-    print(serverResponse)
     return serverResponse
 
 
@@ -201,7 +203,7 @@ def showStats(stats):
     mailList = stats.get("mailList")
 
     print('\n' + f"------- Information sur l'utilisateur {username} -------\n")
-    print(f"Votre boite contient {numberOfMails} courriels.")
+    print(f"Votre boite contient {numberOfMails} courriel(s).")
     print(f"La taille totale de la boite de courriels est de {directorySize} octets.")
     print("Voici une liste des courriels dans la boite:")
     for i in range(1, len(mailList) + 1):
@@ -224,7 +226,7 @@ def main():
             username = logIn()
 
         serverResponse = eval(receiveMessageFromServer())
-        print("\n" + serverResponse.get("message"))
+        print('\n' + serverResponse.get("message"))
         logInLoop = not serverResponse.get("status")
 
     while True:
@@ -244,7 +246,7 @@ def main():
             endConnection()
 
         serverResponse = eval(receiveMessageFromServer())
-        print("\n" + serverResponse.get("message"))
+        print('\n' + serverResponse.get("message"))
 
 
 if __name__ == "__main__":

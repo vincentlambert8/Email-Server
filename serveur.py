@@ -229,6 +229,11 @@ def sendStats(username):
 
 def checkMails(username):
     mails = getUserMailList(username)
+    if not mails:
+        data = {"status": False, "message": "La boite de courriel est vide."}
+        sendMessageToClient(str(data))
+        return
+
     mailContents = dict()
     for i in mails:
         mailContents.update({i: getMailContent(mails.get(i))})
